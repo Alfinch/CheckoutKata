@@ -4,7 +4,7 @@ public interface ICheckout
 {
     void Scan(string item);
 
-    void Remove(string item);
+    bool Remove(string item);
 
-    int GetTotalPrice();
+    decimal GetTotalPrice();
 }

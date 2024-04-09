@@ -12,16 +12,43 @@ public class Checkout : ICheckout
 
     public void Scan(string item)
     {
-        throw new NotImplementedException();
+        if (item == null)
+        {
+            throw new ArgumentNullException(nameof(item));
+        }
+
+        if (!priceData.ContainsKey(item))
+        {
+            throw new ArgumentException($"No price data for product SKU {item}", nameof(item));
+        }
+
+        items.Add(item);
     }
 
-    public void Remove(string item)
+    public bool Remove(string item)
     {
-        throw new NotImplementedException();
+        if (item == null)
+        {
+            throw new ArgumentNullException(nameof(item));
+        }
+
+        return items.Remove(item);
     }
 
-    public int GetTotalPrice()
+    public decimal GetTotalPrice()
     {
-        throw new NotImplementedException();
+        return items
+            .GroupBy(i => i)
+            .Join(
+                priceData, g => g.Key, p => p.Key,
+                (g, p) => GetItemTotal(g.Count(), p.Value))
+            .Sum();
+    }
+
+    private decimal GetItemTotal(int quantity, PriceData priceData)
+    {
+        var specialTotal = Math.Floor((decimal)quantity / priceData.SpecialQuantity) * priceData.UnitPrice;
+        var remainingUnitTotal = quantity % priceData.SpecialQuantity * priceData.UnitPrice;
+        return specialTotal + remainingUnitTotal;
     }
 }
