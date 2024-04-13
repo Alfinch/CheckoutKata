@@ -45,6 +45,7 @@ public class Checkout : ICheckout
         {
             // Count the number of times this combination appears in the items list.
             var occurrences = specialPrice.Combination
+                // Split the combination into groups of matching SKUs.
                 .GroupBy(sku => sku)
                 .Select(group => {
 
@@ -55,6 +56,8 @@ public class Checkout : ICheckout
                     // to figure out the number of times this part of the combination appears.
                     return (int)Math.Floor((double)individualOccurrences / group.Count());
                 })
+                // Taking the minimum number of times any part of the combination appears in the items list
+                // gives us the number of times the whole combination appears.
                 .Min();
 
             // Remove the items from the list.
