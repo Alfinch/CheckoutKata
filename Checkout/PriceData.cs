@@ -1,29 +1,40 @@
 namespace Checkout;
 
-/// <summary>
-/// Represents the price data for a product.
-/// </summary>
-public struct PriceData
+public class PriceData : IPriceData
 {
-    public PriceData(decimal unitPrice, decimal specialPrice, int specialQuantity)
+    public IReadOnlyDictionary<string, decimal> UnitPrices { get; }
+    public IReadOnlyCollection<ISpecialPrice> SpecialPrices { get; }
+
+    public PriceData(IReadOnlyDictionary<string, decimal> unitPrices, IReadOnlyCollection<ISpecialPrice> specialPrices)
     {
-        UnitPrice = unitPrice;
-        SpecialPrice = specialPrice;
-        SpecialQuantity = specialQuantity;
+        UnitPrices = unitPrices ?? throw new ArgumentNullException(nameof(unitPrices));
+        SpecialPrices = specialPrices ?? throw new ArgumentNullException(nameof(specialPrices));
     }
 
     /// <summary>
-    /// The unit price for the product.
+    /// A shorthand constructor for creating a PriceData object with a dictionary of unit prices and a dictionary of condensed special prices.
     /// </summary>
-    public decimal UnitPrice { get; }
+    /// <param name="unitPrices"></param>
+    /// <param name="condensedSpecialPrices"></param>
+    /// <exception cref="ArgumentNullException"></exception>
+    public PriceData(Dictionary<string, decimal> unitPrices, Dictionary<string, decimal> condensedSpecialPrices)
+    {
+        UnitPrices = unitPrices ?? throw new ArgumentNullException(nameof(unitPrices));
+        SpecialPrices = condensedSpecialPrices != null ? ExpandSpecialPrices(condensedSpecialPrices) : throw new ArgumentNullException(nameof(condensedSpecialPrices));
+    }
 
     /// <summary>
-    /// A price applied per special quantity of items.
+    /// Expands a dictionary of SKU combinations and prices into a collection of special prices.
     /// </summary>
-    public decimal SpecialPrice { get; }
-
-    /// <summary>
-    /// The quantity of items which must be purchased for the special price to apply.
-    /// </summary>
-    public int SpecialQuantity { get; }
+    /// <param name="condensedSpecialPrices"></param>
+    /// <returns></returns>
+    private IReadOnlyCollection<ISpecialPrice> ExpandSpecialPrices(Dictionary<string, decimal> condensedSpecialPrices)
+    {
+        return condensedSpecialPrices
+            .Select(csp => new SpecialPrice(
+                csp.Key.Split(',').Select(sku => sku.Trim()).ToArray(),
+                csp.Value
+            ))
+            .ToList();
+    }
 }
