@@ -1,41 +1,12 @@
 ﻿namespace Checkout;
 
-public class Checkout : ICheckout
+public class Checkout : CheckoutBase
 {
-    private readonly IPriceData priceData;
-    private readonly IList<string> items = new List<string>();
-
-    public Checkout(IPriceData priceData)
+    public Checkout(IPriceData priceData) : base(priceData)
     {
-        this.priceData = priceData ?? throw new ArgumentNullException(nameof(priceData));
     }
 
-    public void Scan(string sku)
-    {
-        if (sku == null)
-        {
-            throw new ArgumentNullException(nameof(sku));
-        }
-
-        if (!priceData.UnitPrices.ContainsKey(sku))
-        {
-            throw new ArgumentException($"No price data for product SKU {sku}", nameof(sku));
-        }
-
-        items.Add(sku);
-    }
-
-    public bool Remove(string sku)
-    {
-        if (sku == null)
-        {
-            throw new ArgumentNullException(nameof(sku));
-        }
-
-        return items.Remove(sku);
-    }
-
-    public decimal GetTotalPrice()
+    public override decimal GetTotalPrice()
     {
         var items = this.items.ToList();
         var total = 0m;
