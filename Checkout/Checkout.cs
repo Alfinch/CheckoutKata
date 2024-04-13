@@ -10,41 +10,47 @@ public class Checkout : ICheckout
         this.priceData = priceData ?? throw new ArgumentNullException(nameof(priceData));
     }
 
-    public void Scan(string item)
+    public void Scan(string sku)
     {
-        if (item == null)
+        if (sku == null)
         {
-            throw new ArgumentNullException(nameof(item));
+            throw new ArgumentNullException(nameof(sku));
         }
 
-        if (!priceData.ContainsKey(item))
+        if (!priceData.ContainsKey(sku))
         {
-            throw new ArgumentException($"No price data for product SKU {item}", nameof(item));
+            throw new ArgumentException($"No price data for product SKU {sku}", nameof(sku));
         }
 
-        items.Add(item);
+        items.Add(sku);
     }
 
-    public bool Remove(string item)
+    public bool Remove(string sku)
     {
-        if (item == null)
+        if (sku == null)
         {
-            throw new ArgumentNullException(nameof(item));
+            throw new ArgumentNullException(nameof(sku));
         }
 
-        return items.Remove(item);
+        return items.Remove(sku);
     }
 
     public decimal GetTotalPrice()
     {
         return items
-            .GroupBy(i => i)
+            .GroupBy(sku => sku)
             .Join(
                 priceData, g => g.Key, p => p.Key,
                 (g, p) => GetItemTotal(g.Count(), p.Value))
             .Sum();
     }
 
+    /// <summary>
+    /// Gets the total price for a given quantity of items with the given price data.
+    /// </summary>
+    /// <param name="quantity"></param>
+    /// <param name="priceData"></param>
+    /// <returns>The total price for the given quantity of items.</returns>
     private decimal GetItemTotal(int quantity, PriceData priceData)
     {
         var specialTotal = Math.Floor((decimal)quantity / priceData.SpecialQuantity) * priceData.UnitPrice;
