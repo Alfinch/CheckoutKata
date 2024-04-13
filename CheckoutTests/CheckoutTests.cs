@@ -66,6 +66,24 @@ public class CheckoutTests
     }
 
     [Test]
+    public void Remove_WillRemoveOnlyOneItem()
+    {
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.Remove("A");
+        Assert.That(checkout.GetTotalPrice(), Is.EqualTo(50));
+    }
+
+    [Test]
+    public void Remove_WillRemoveTheCorrectItem()
+    {
+        checkout.Scan("A");
+        checkout.Scan("B");
+        checkout.Remove("A");
+        Assert.That(checkout.GetTotalPrice(), Is.EqualTo(30));
+    }
+
+    [Test]
     public void GetTotalPrice_WillReturnZeroIfNoItemsScanned()
     {
         Assert.That(checkout.GetTotalPrice(), Is.EqualTo(0));
